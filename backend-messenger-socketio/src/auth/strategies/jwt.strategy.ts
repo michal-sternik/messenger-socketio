@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserService } from 'src/user/user.service';
+import { RequestUser } from '../types/request-user';
 
 export interface JwtPayload {
   sub: number;
@@ -26,6 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException();
     }
-    return user;
+    const requestUser: RequestUser = { id: user.id };
+    return requestUser;
   }
 }
