@@ -22,7 +22,7 @@ export class MessageService {
 
     if (
       !conversation ||
-      !conversation.participants.some((p) => p.id === senderId)
+      !conversation.participants.some((p) => p.userId === senderId)
     ) {
       throw new Error('Sender is not a participant in this conversation');
     }

@@ -93,7 +93,7 @@ export class ConversationParticipantService {
     });
   }
   async getUserConversationsWithLastMessage(userId: number) {
-    return await this.prismaService.conversationParticipant.findFirst({
+    return await this.prismaService.conversationParticipant.findMany({
       where: { userId },
       include: {
         conversation: {
@@ -107,6 +107,19 @@ export class ConversationParticipantService {
         },
       },
       orderBy: { conversation: { updatedAt: 'desc' } },
+    });
+  }
+
+  async findParticipant(conversationId: string, userId: number) {
+    return await this.prismaService.conversationParticipant.findFirst({
+      where: { conversationId, userId },
+    });
+  }
+
+  async getConversationParticipants(conversationId: string) {
+    return await this.prismaService.conversationParticipant.findMany({
+      where: { conversationId },
+      include: { user: true },
     });
   }
 }

@@ -19,6 +19,9 @@ import { RequestUser } from 'src/auth/types/request-user';
 export class ConversationController {
   constructor(private readonly conversationService: ConversationService) {}
 
+  /**
+   * Not used for now - reimplemented in websockets
+   */
   @UseGuards(JwtAuthGuard)
   @Post()
   createConversation(

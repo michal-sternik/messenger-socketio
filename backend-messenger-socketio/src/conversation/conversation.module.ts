@@ -8,5 +8,6 @@ import { ConversationParticipantModule } from 'src/conversation-participant/conv
   imports: [ConversationParticipantModule],
   controllers: [ConversationController],
   providers: [ConversationService, PrismaService],
+  exports: [ConversationService],
 })
 export class ConversationModule {}
