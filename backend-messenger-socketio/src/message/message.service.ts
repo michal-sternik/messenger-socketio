@@ -22,10 +22,15 @@ export class MessageService {
 
     if (
       !conversation ||
-      !conversation.participants.some((p) => p.id === senderId)
+      !conversation.participants.some((p) => p.userId === senderId)
     ) {
       throw new Error('Sender is not a participant in this conversation');
     }
+
+    await this.prismaService.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
 
     return await this.prismaService.message.create({
       data: {
@@ -82,6 +87,29 @@ export class MessageService {
       }
     }
 
+    // Get conversation info and participants
+    const conversation = await this.prismaService.conversation.findUnique({
+      where: { id: conversationId },
+      select: {
+        id: true,
+        isGroup: true,
+        participants: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+
     const messages = await this.prismaService.message.findMany({
       where: {
         conversationId,
@@ -91,7 +119,10 @@ export class MessageService {
           },
         }),
       },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
         sender: {
           select: {
             id: true,
@@ -115,10 +146,19 @@ export class MessageService {
           )
         : null;
 
+    // Format participants
+    const conversationParticipants = conversation.participants.map((p) => ({
+      id: p.user.id,
+      username: p.user.username,
+    }));
+
     return {
       messages: messages.reverse(),
       hasMore,
       nextCursor,
+      conversationId: conversation.id,
+      isGroup: conversation.isGroup,
+      conversationParticipants,
     };
   }
 }

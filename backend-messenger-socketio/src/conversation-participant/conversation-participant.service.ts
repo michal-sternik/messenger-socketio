@@ -93,20 +93,72 @@ export class ConversationParticipantService {
     });
   }
   async getUserConversationsWithLastMessage(userId: number) {
-    return await this.prismaService.conversationParticipant.findFirst({
-      where: { userId },
-      include: {
-        conversation: {
-          include: {
-            messages: {
-              orderBy: { createdAt: 'desc' },
-              take: 1,
-              include: { sender: true },
+    const participants =
+      await this.prismaService.conversationParticipant.findMany({
+        where: { userId },
+        select: {
+          id: true,
+          conversationId: true,
+          conversation: {
+            select: {
+              updatedAt: true,
+              isGroup: true,
+              participants: {
+                select: {
+                  id: true,
+                  user: {
+                    select: {
+                      username: true,
+                    },
+                  },
+                },
+              },
+              messages: {
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                select: {
+                  id: true,
+                  content: true,
+                  sender: {
+                    select: {
+                      id: true,
+                      username: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
+        orderBy: { conversation: { updatedAt: 'desc' } },
+      });
+
+    // Map to desired shape: message (not messages), participants (id, username)
+    return participants.map((p) => ({
+      id: p.id,
+      conversationId: p.conversationId,
+      conversation: {
+        updatedAt: p.conversation.updatedAt,
+        isGroup: p.conversation.isGroup,
+        message: p.conversation.messages[0] || null,
+        participants: p.conversation.participants.map((part) => ({
+          id: part.id,
+          username: part.user.username,
+        })),
       },
-      orderBy: { conversation: { updatedAt: 'desc' } },
+    }));
+  }
+
+  async findParticipant(conversationId: string, userId: number) {
+    return await this.prismaService.conversationParticipant.findFirst({
+      where: { conversationId, userId },
+    });
+  }
+
+  async getConversationParticipants(conversationId: string) {
+    return await this.prismaService.conversationParticipant.findMany({
+      where: { conversationId },
+      include: { user: true },
     });
   }
 }
