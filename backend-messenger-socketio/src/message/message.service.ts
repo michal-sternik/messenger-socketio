@@ -87,7 +87,7 @@ export class MessageService {
       }
     }
 
-    // Get conversation info and participants
+    //get conversation info and participants
     const conversation = await this.prismaService.conversation.findUnique({
       where: { id: conversationId },
       select: {
@@ -146,7 +146,7 @@ export class MessageService {
           )
         : null;
 
-    // Format participants
+    //format participants
     const conversationParticipants = conversation.participants.map((p) => ({
       id: p.user.id,
       username: p.user.username,

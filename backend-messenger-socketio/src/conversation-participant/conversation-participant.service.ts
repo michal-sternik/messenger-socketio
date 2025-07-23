@@ -133,7 +133,7 @@ export class ConversationParticipantService {
         orderBy: { conversation: { updatedAt: 'desc' } },
       });
 
-    // Map to desired shape: message (not messages), participants (id, username)
+    //desired shape of return
     return participants.map((p) => ({
       id: p.id,
       conversationId: p.conversationId,

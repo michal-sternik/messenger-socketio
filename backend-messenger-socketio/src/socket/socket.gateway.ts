@@ -42,31 +42,24 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: SocketType) {
     try {
-      console.log(`Client connected: ${client.id}`);
-
       //authorization on connection
       const token =
         client.handshake.headers.authorization?.split(' ')[1] ||
         (client.handshake.auth?.token as string);
 
       if (!token) {
-        console.log('No token provided');
         client.disconnect();
         return;
       }
 
       const payload = this.jwtService.verify<JwtPayload>(token);
       client.data.userId = payload.sub;
-      console.log(`User ${payload.sub} authenticated and connected`);
-    } catch (error) {
-      console.log('Authentication failed:', error);
+    } catch {
       client.disconnect();
     }
   }
 
-  handleDisconnect(client: SocketType) {
-    console.log(`Client disconnected: ${client.id}`);
-  }
+  handleDisconnect() {}
 
   @SubscribeMessage('join_conversation')
   async joinConversation(
@@ -92,7 +85,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       //join the conversation room
       await client.join(data.conversationId);
-      console.log(`User ${userId} joined conversation ${data.conversationId}`);
 
       client.emit('joined_conversation', {
         conversationId: data.conversationId,
@@ -119,7 +111,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       //join the conversation room
       await client.join(data.conversationId);
-      console.log(`User ${userId} joined conversation ${data.conversationId}`);
 
       const sockets = await this.server.fetchSockets();
       const invitedSocket = sockets.find(
@@ -151,7 +142,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: SocketType,
     @MessageBody() data: SocketMessageDto,
   ) {
-    console.log(client.data);
     const userId = client.data.userId as number;
 
     try {
@@ -199,9 +189,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { participantsIds: number[]; content: string },
   ) {
     const userId = client.data.userId as number;
-    console.log(client.data);
-    console.log('=================');
-    console.log('Starting conversation with participants:', data);
     try {
       //create conversation and send the first message
       const message =
@@ -218,13 +205,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       for (const participantId of allParticipants) {
         const sockets = await this.server.fetchSockets();
-        sockets.forEach((socket) =>
-          console.log(
-            'Socket userId:',
-            (socket.data as SocketData).userId,
-            '\n\n===================',
-          ),
-        );
         const participantSocket = sockets.find(
           (s) => (s.data as SocketData).userId === participantId,
         );
@@ -246,7 +226,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       //update conversation list
       await this.updateConversationList(conversationId);
     } catch (error) {
-      console.log('Error starting conversation:', error);
       client.emit('error', {
         message:
           error instanceof Error
