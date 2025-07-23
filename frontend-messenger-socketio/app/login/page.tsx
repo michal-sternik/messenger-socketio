@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authApi } from "@/lib/api";
@@ -64,58 +64,60 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-black">
-            Welcome Back
-          </CardTitle>
-          <CardDescription>Sign in to your messenger account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Input
-                type="text"
-                placeholder="Username or Email"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
-                className="w-full"
-              />
+    <Suspense>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-black">
+              Welcome Back
+            </CardTitle>
+            <CardDescription>Sign in to your messenger account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Input
+                  type="text"
+                  placeholder="Username or Email"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  required
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full"
+                />
+              </div>
+              {error && (
+                <div className="text-red-500 text-sm text-center">{error}</div>
+              )}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[rgba(1,125,239,1)] hover:bg-[rgba(1,100,200,1)] text-white"
+              >
+                {isLoading ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
+            <div className="mt-4 text-center">
+              <span className="text-gray-600">Don't have an account? </span>
+              <Link
+                href="/register"
+                className="text-[rgba(1,125,239,1)] hover:underline"
+              >
+                Sign up
+              </Link>
             </div>
-            <div>
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full"
-              />
-            </div>
-            {error && (
-              <div className="text-red-500 text-sm text-center">{error}</div>
-            )}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[rgba(1,125,239,1)] hover:bg-[rgba(1,100,200,1)] text-white"
-            >
-              {isLoading ? "Signing in..." : "Sign In"}
-            </Button>
-          </form>
-          <div className="mt-4 text-center">
-            <span className="text-gray-600">Don't have an account? </span>
-            <Link
-              href="/register"
-              className="text-[rgba(1,125,239,1)] hover:underline"
-            >
-              Sign up
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Suspense>
   );
 }

@@ -21,6 +21,7 @@
     "@nestjs/platform-socket.io": "latest",
     "@nestjs/testing": "latest",
     "@nestjs/websockets": "latest",
+    "@next/env": "^15.4.3",
     "@prisma/client": "latest",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
