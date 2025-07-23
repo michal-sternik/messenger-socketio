@@ -9,6 +9,31 @@ export class UserService {
   async getUserById(id: number) {
     return await this.prisma.user.findUnique({
       where: { id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  async searchUsers(searchPhrase: string, requestingUserId?: number) {
+    return await this.prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: searchPhrase, mode: 'insensitive' } },
+          { email: { contains: searchPhrase, mode: 'insensitive' } },
+        ],
+        //do not return yourself
+        NOT: { id: requestingUserId },
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      },
+      take: 10,
     });
   }
 
