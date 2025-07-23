@@ -82,4 +82,7 @@ class SocketService {
   }
 }
 
+/*todo*/
+//-add websocket update conversation list after deleting conversation
+//-prevent user from creating multiple conversations with the same user
 export const socketService = new SocketService();

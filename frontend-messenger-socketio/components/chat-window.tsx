@@ -18,6 +18,7 @@ import {
   Smile,
   Paperclip,
   ArrowDown,
+  Menu,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { getConversationName, getConversationAvatar } from "@/lib/utils";
@@ -31,9 +32,13 @@ import { Button } from "./ui/button";
 
 interface ChatWindowProps {
   conversationId: string | null;
+  onToggleConversationList: () => void;
 }
 
-export function ChatWindow({ conversationId }: ChatWindowProps) {
+export function ChatWindow({
+  conversationId,
+  onToggleConversationList,
+}: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -155,8 +160,9 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
 
   if (!conversationId) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-white">
-        <div className="text-center max-w-md">
+      <div className="flex-1 p-10 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-white">
+        {/* Welcome content */}
+        <div className="text-center max-w-md mt-16 md:mt-0">
           <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl flex items-center justify-center mx-auto mb-6">
             <Send className="h-12 w-12 text-blue-500" />
           </div>
@@ -166,6 +172,15 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
           <p className="text-gray-600 mb-6">
             Select a conversation or start a new one to begin chatting
           </p>
+
+          {/* Button to open conversationList on mobile initial screen (when no conversation is selected) */}
+          <button
+            className="md:hidden bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-2xl font-medium transition-all duration-200 shadow-md hover:shadow-lg mb-6"
+            onClick={onToggleConversationList}
+          >
+            View Conversations
+          </button>
+
           <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
             <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
             <span>Ready to connect</span>
@@ -181,6 +196,13 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
       <div className="bg-white border-b border-gray-100 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+              onClick={onToggleConversationList}
+            >
+              <Menu className="h-6 w-6 text-gray-600" />
+            </button>
+
             {conversationInfo &&
               user &&
               getConversationAvatar(
@@ -193,7 +215,7 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
                 title={conversationInfo?.conversationParticipants
                   .map((p) => p.username)
                   .join(", ")}
-                className="font-semibold text-gray-800"
+                className="font-semibold text-gray-800 w-40 whitespace-nowrap overflow-hidden md:w-auto"
               >
                 {conversationInfo &&
                   user &&
@@ -210,6 +232,7 @@ export function ChatWindow({ conversationId }: ChatWindowProps) {
             </div>
           </div>
 
+          {/* Dropdown Menu */}
           <div className="flex items-center space-x-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

@@ -12,6 +12,8 @@ export default function HomePage() {
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
+  const [isConversationListVisible, setIsConversationListVisible] =
+    useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -43,11 +45,35 @@ export default function HomePage() {
     <div className="h-screen bg-white flex flex-col overflow-hidden">
       <Header />
       <div className="flex-1 flex overflow-hidden">
-        <ConversationList
-          selectedConversationId={selectedConversationId}
-          onSelectConversation={setSelectedConversationId}
-        />
-        <ChatWindow conversationId={selectedConversationId} />
+        {/* ConversationList */}
+        <div
+          className={`${
+            isConversationListVisible ? "block w-full" : "hidden"
+          }  md:block w-80 bg-gradient-to-b from-gray-50 to-white border-r border-gray-100`}
+        >
+          <ConversationList
+            selectedConversationId={selectedConversationId}
+            onSelectConversation={(conversationId) => {
+              setSelectedConversationId(conversationId);
+              setIsConversationListVisible(false); //close the list when a conversation is selected
+            }}
+            onToggleView={() => setIsConversationListVisible(false)} //close the list on mobile
+          />
+        </div>
+
+        {/* ChatWindow */}
+        <div
+          className={`${
+            !isConversationListVisible ? "flex" : "hidden"
+          } w-full h-full `}
+        >
+          <ChatWindow
+            conversationId={selectedConversationId}
+            onToggleConversationList={() =>
+              setIsConversationListVisible((prev) => !prev)
+            }
+          />
+        </div>
       </div>
     </div>
   );

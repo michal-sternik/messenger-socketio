@@ -7,16 +7,18 @@ import type { ConversationWithLastMessage } from "@/types";
 import { Card } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/contexts/auth-context";
-import { Users, Clock, MessageSquare } from "lucide-react";
+import { Users, Clock, MessageSquare, X } from "lucide-react";
 
 interface ConversationListProps {
   selectedConversationId: string | null;
   onSelectConversation: (conversationId: string) => void;
+  onToggleView: () => void; //to close conversation list on mobile
 }
 
 export function ConversationList({
   selectedConversationId,
   onSelectConversation,
+  onToggleView,
 }: ConversationListProps) {
   const [conversations, setConversations] = useState<
     ConversationWithLastMessage[]
@@ -123,7 +125,7 @@ export function ConversationList({
   }
 
   return (
-    <div className="w-80 bg-gradient-to-b from-gray-50 to-white border-r border-gray-100 flex flex-col">
+    <div className="w-full md:w-80 bg-gradient-to-b from-gray-50 to-white border-r border-gray-100 flex flex-col">
       {/* Header */}
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center justify-between">
@@ -133,8 +135,17 @@ export function ConversationList({
               {conversations.length} conversations
             </p>
           </div>
-          <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-            <MessageSquare className="h-5 w-5 text-blue-600" />
+          <div className="flex items-center space-x-2">
+            {/* Close button for mobile */}
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+              onClick={onToggleView}
+            >
+              <X className="h-5 w-5 text-gray-600" />
+            </button>
+            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+              <MessageSquare className="h-5 w-5 text-blue-600" />
+            </div>
           </div>
         </div>
       </div>
