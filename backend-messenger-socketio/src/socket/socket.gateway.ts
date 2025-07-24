@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { DefaultEventsMap, Server, Socket } from 'socket.io';
 import { MessageService } from '../message/message.service';
+import { ConversationService } from 'src/conversation/conversation.service';
 import { ConversationParticipantService } from '../conversation-participant/conversation-participant.service';
 import { SocketMessageDto } from './dtos/socket-message.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -36,6 +37,7 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
     private readonly messageService: MessageService,
+    private readonly conversationService: ConversationService,
     private readonly conversationParticipantService: ConversationParticipantService,
     private readonly jwtService: JwtService,
   ) {}
@@ -225,12 +227,54 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       //update conversation list
       await this.updateConversationList(conversationId);
+      client.emit('conversation_started', { conversationId });
     } catch (error) {
       client.emit('error', {
         message:
           error instanceof Error
             ? error.message
             : 'Failed to start conversation',
+      });
+    }
+  }
+
+  @SubscribeMessage('delete_conversation')
+  async deleteConversation(
+    @ConnectedSocket() client: SocketType,
+    @MessageBody() data: { conversationId: string },
+  ) {
+    const userId = client.data.userId as number;
+    console.log('Deleting conversation:', data.conversationId);
+    try {
+      await this.conversationService.deleteConversation(
+        userId,
+        data.conversationId,
+      );
+
+      //update conversation list for all participants
+      await this.updateConversationList(data.conversationId);
+
+      const participants =
+        await this.conversationParticipantService.getConversationParticipants(
+          data.conversationId,
+        );
+      const sockets = await this.server.fetchSockets();
+      for (const participant of participants) {
+        const userSocket = sockets.find(
+          (s) => (s.data as SocketData).userId === participant.userId,
+        );
+        if (userSocket) {
+          userSocket.emit('conversation_deleted', {
+            conversationId: data.conversationId,
+          });
+        }
+      }
+    } catch (error) {
+      client.emit('error', {
+        message:
+          error instanceof Error
+            ? error.message
+            : 'Failed to delete conversation',
       });
     }
   }

@@ -38,7 +38,11 @@ function SearchBar({ onShowUserSearch }: { onShowUserSearch: () => void }) {
   );
 }
 
-export function Header() {
+export function Header({
+  onConversationCreated,
+}: {
+  onConversationCreated?: (id: string) => void;
+}) {
   const { user, logout } = useAuth();
   const [showUserSearch, setShowUserSearch] = useState(false);
 
@@ -107,7 +111,13 @@ export function Header() {
         {/* UserSearch Modal/Dropdown */}
         {showUserSearch && (
           <div className="relative">
-            <UserSearch onClose={() => setShowUserSearch(false)} />
+            <UserSearch
+              onClose={() => setShowUserSearch(false)}
+              onConversationCreated={(id) => {
+                setShowUserSearch(false);
+                if (onConversationCreated) onConversationCreated(id);
+              }}
+            />
           </div>
         )}
       </div>

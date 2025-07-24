@@ -11,14 +11,19 @@ import { X, Plus, Send, Search, Users, UserIcon } from "lucide-react";
 
 interface UserSearchProps {
   onClose: () => void;
+  onConversationCreated?: (conversationId: string) => void;
 }
 
-export function UserSearch({ onClose }: UserSearchProps) {
+export function UserSearch({
+  onClose,
+  onConversationCreated,
+}: UserSearchProps) {
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -71,15 +76,35 @@ export function UserSearch({ onClose }: UserSearchProps) {
   };
 
   const startConversation = () => {
-    if (selectedUsers.length === 0 || !message.trim()) return;
+    if (selectedUsers.length === 0 || !message.trim() || isStartingConversation)
+      return;
 
+    setIsStartingConversation(true);
     const participantIds = selectedUsers.map((u) => u.id);
     socketService.startConversation(participantIds, message.trim());
-
-    setSelectedUsers([]);
-    setMessage("");
-    onClose();
   };
+
+  useEffect(() => {
+    function handleConversationStarted({
+      conversationId,
+    }: {
+      conversationId: string;
+    }) {
+      if (onConversationCreated && conversationId) {
+        onConversationCreated(conversationId);
+      }
+      setSelectedUsers([]);
+      setMessage("");
+      setIsStartingConversation(false); // reset blokady
+      onClose();
+    }
+
+    socketService.onConversationStarted(handleConversationStarted);
+    return () => {
+      socketService.off("conversation_started", handleConversationStarted);
+      setIsStartingConversation(false); // reset na odmontowanie
+    };
+  }, [onConversationCreated, onClose]);
 
   return (
     <div ref={searchRef} className="absolute top-full left-0 right-0 mt-3 z-50">
@@ -220,16 +245,28 @@ export function UserSearch({ onClose }: UserSearchProps) {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className="py-3 rounded-2xl border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                  onKeyPress={(e) => e.key === "Enter" && startConversation()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !isStartingConversation)
+                      startConversation();
+                  }}
+                  disabled={isStartingConversation}
                 />
                 <div className="flex justify-end">
                   <Button
                     onClick={startConversation}
-                    disabled={!message.trim()}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl px-6 py-3 shadow-md hover:shadow-lg transition-all duration-200"
+                    disabled={!message.trim() || isStartingConversation}
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl px-6 py-3 shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center"
                   >
-                    <Send className="h-4 w-4 mr-2" />
-                    Start Conversation
+                    {isStartingConversation ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                      </>
+                    )}
+                    <span>Start Conversation</span>
                   </Button>
                 </div>
               </div>
