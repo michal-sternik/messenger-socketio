@@ -53,7 +53,7 @@ export function Header({
       <div className="px-6 py-4">
         <div className="flex flex-col space-y-4">
           {/* Top row - Logo, SearchBar (desktop only), User Info */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center space-x-6">
               {/* Logo and Brand */}
               <div className="flex items-center space-x-3">

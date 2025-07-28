@@ -33,16 +33,8 @@ export function ConversationList({
       setConversations(updatedConversations);
     });
 
-    // socketService.onConversationDeleted((data) => {
-    //   // Aktualizuj listę rozmów po usunięciu
-    //   setConversations(prev =>
-    //     prev.filter(conv => conv.conversationId !== data.conversationId)
-    //   );
-    // });
-
     return () => {
       socketService.off("conversation_updated");
-      //socketService.off("conversation_deleted");
     };
   }, []);
 

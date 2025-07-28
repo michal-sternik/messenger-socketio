@@ -77,6 +77,7 @@ export default function HomePage() {
             onToggleConversationList={() =>
               setIsConversationListVisible((prev) => !prev)
             }
+            setConversationId={setSelectedConversationId}
           />
         </div>
       </div>

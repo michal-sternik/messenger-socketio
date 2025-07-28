@@ -244,20 +244,21 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { conversationId: string },
   ) {
     const userId = client.data.userId as number;
-    console.log('Deleting conversation:', data.conversationId);
+
     try {
+      //get users list before deleting the conversation
+      const participants =
+        await this.conversationParticipantService.getConversationParticipants(
+          data.conversationId,
+        );
+
+      //delete the conversation
       await this.conversationService.deleteConversation(
         userId,
         data.conversationId,
       );
 
-      //update conversation list for all participants
-      await this.updateConversationList(data.conversationId);
-
-      const participants =
-        await this.conversationParticipantService.getConversationParticipants(
-          data.conversationId,
-        );
+      //notify all participants about the deletion
       const sockets = await this.server.fetchSockets();
       for (const participant of participants) {
         const userSocket = sockets.find(
@@ -267,6 +268,21 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
           userSocket.emit('conversation_deleted', {
             conversationId: data.conversationId,
           });
+        }
+      }
+
+      //update conversation list for all participants
+      for (const participant of participants) {
+        const userSocket = sockets.find(
+          (s) => (s.data as SocketData).userId === participant.userId,
+        );
+        if (userSocket) {
+          //get current user's conversation list
+          const conversations =
+            await this.conversationParticipantService.getUserConversationsWithLastMessage(
+              participant.userId,
+            );
+          userSocket.emit('conversation_updated', conversations);
         }
       }
     } catch (error) {

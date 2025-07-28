@@ -95,14 +95,14 @@ export function UserSearch({
       }
       setSelectedUsers([]);
       setMessage("");
-      setIsStartingConversation(false); // reset blokady
+      setIsStartingConversation(false);
       onClose();
     }
 
     socketService.onConversationStarted(handleConversationStarted);
     return () => {
       socketService.off("conversation_started", handleConversationStarted);
-      setIsStartingConversation(false); // reset na odmontowanie
+      setIsStartingConversation(false);
     };
   }, [onConversationCreated, onClose]);
 

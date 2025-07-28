@@ -93,7 +93,4 @@ class SocketService {
   }
 }
 
-/*todo*/
-//-add websocket update conversation list after deleting conversation
-
 export const socketService = new SocketService();
