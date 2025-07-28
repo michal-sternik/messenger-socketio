@@ -151,9 +151,9 @@ export function ConversationList({
       </div>
 
       {/* Conversations */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex flex-1 overflow-y-hidden">
         {conversations.length === 0 ? (
-          <div className="p-6 text-center">
+          <div className="flex flex-col justify-center w-full p-6 text-center ">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <MessageSquare className="h-8 w-8 text-gray-400" />
             </div>
@@ -163,7 +163,7 @@ export function ConversationList({
             </p>
           </div>
         ) : (
-          <div className="p-3 space-y-2">
+          <div className="w-full p-3 space-y-2 overflow-y-auto">
             {conversations.map((conversation) => (
               <Card
                 key={conversation.conversationId}

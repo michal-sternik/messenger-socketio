@@ -15,6 +15,33 @@ export class ConversationService {
     createConversationDto: CreateConversationDto,
   ) {
     const isGroup = createConversationDto.participants.length > 1;
+
+    //if someone tries to create a conversation with a person they already have a conversation with
+    //and it's not a group conversation, return the existing conversation
+    //so there's no need to throw an error, just append the new message to the existing conversation
+    if (!isGroup) {
+      const participantId = createConversationDto.participants[0];
+
+      const existingConversation =
+        await this.prismaService.conversation.findFirst({
+          where: {
+            isGroup: false,
+            participants: {
+              every: {
+                userId: {
+                  in: [creatorId, participantId],
+                },
+              },
+            },
+          },
+          include: {
+            participants: true,
+          },
+        });
+      if (existingConversation) {
+        return existingConversation;
+      }
+    }
     return await this.prismaService.conversation.create({
       data: {
         isGroup,

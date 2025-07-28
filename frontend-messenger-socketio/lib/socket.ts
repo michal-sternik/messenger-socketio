@@ -55,6 +55,10 @@ class SocketService {
     this.socket?.emit("start_conversation", { participantsIds, content });
   }
 
+  deleteConversation(conversationId: string) {
+    this.socket?.emit("delete_conversation", { conversationId });
+  }
+
   addToConversation(conversationId: string, userId: number) {
     this.socket?.emit("add_to_conversation", { conversationId, userId });
   }
@@ -75,6 +79,13 @@ class SocketService {
   onUserAddedToConversation(callback: (data: any) => void) {
     this.socket?.on("user_added_to_conversation", callback);
   }
+  onConversationStarted(callback: (data: { conversationId: string }) => void) {
+    this.socket?.on("conversation_started", callback);
+  }
+
+  onConversationDeleted(callback: (data: { conversationId: string }) => void) {
+    this.socket?.on("conversation_deleted", callback);
+  }
 
   //remove listeners
   off(event: string, callback?: any) {
@@ -82,7 +93,4 @@ class SocketService {
   }
 }
 
-/*todo*/
-//-add websocket update conversation list after deleting conversation
-//-prevent user from creating multiple conversations with the same user
 export const socketService = new SocketService();

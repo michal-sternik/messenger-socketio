@@ -7,6 +7,7 @@ import { conversationApi } from "@/lib/api";
 import { socketService } from "@/lib/socket";
 import { useAuth } from "@/contexts/auth-context";
 import type { Message } from "@/types";
+import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
 import {
@@ -33,11 +34,13 @@ import { Button } from "./ui/button";
 interface ChatWindowProps {
   conversationId: string | null;
   onToggleConversationList: () => void;
+  setConversationId: (id: string | null) => void;
 }
 
 export function ChatWindow({
   conversationId,
   onToggleConversationList,
+  setConversationId,
 }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -65,8 +68,16 @@ export function ChatWindow({
         }
       });
 
+      socketService.onConversationDeleted((data) => {
+        if (data.conversationId === conversationId) {
+          toast("Conversation has been deleted, redirecting in 1 second...");
+          setTimeout(() => setConversationId(null), 1000);
+        }
+      });
+
       return () => {
         socketService.off("new_message");
+        socketService.off("conversation_deleted");
       };
     }
   }, [conversationId]);
@@ -226,7 +237,7 @@ export function ChatWindow({
                   )}
               </h3>
               <p className="text-sm text-green-500 flex items-center">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
                 Online
               </p>
             </div>
@@ -249,16 +260,7 @@ export function ChatWindow({
                   className="cursor-pointer text-red-600 focus:bg-red-50"
                   onClick={() => {
                     if (!conversationId) return;
-                    void (async () => {
-                      try {
-                        await conversationApi.deleteConversation(
-                          conversationId
-                        );
-                        window.location.reload();
-                      } catch {
-                        alert("Failed to delete conversation");
-                      }
-                    })();
+                    socketService.deleteConversation(conversationId);
                   }}
                 >
                   Delete conversation
@@ -332,7 +334,7 @@ export function ChatWindow({
                 className={`flex items-end space-x-2 max-w-xs lg:max-w-md ${isOwn ? "flex-row-reverse space-x-reverse" : ""}`}
               >
                 {!isOwn && showAvatar && (
-                  <div className="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                  <div className="min-w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                     {message.sender.username.charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -352,7 +354,9 @@ export function ChatWindow({
                         : "bg-white text-gray-800 border border-gray-100 rounded-bl-md"
                     }`}
                   >
-                    <div className="break-words">{message.content}</div>
+                    <div className="break-words break-all">
+                      {message.content}
+                    </div>
                   </div>
 
                   {showTime && (

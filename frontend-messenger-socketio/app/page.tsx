@@ -43,13 +43,18 @@ export default function HomePage() {
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
-      <Header />
+      <Header
+        onConversationCreated={(id) => {
+          setSelectedConversationId(id);
+          setIsConversationListVisible(false);
+        }}
+      />
       <div className="flex-1 flex overflow-hidden">
         {/* ConversationList */}
         <div
           className={`${
-            isConversationListVisible ? "block w-full" : "hidden"
-          }  md:block w-80 bg-gradient-to-b from-gray-50 to-white border-r border-gray-100`}
+            isConversationListVisible ? "flex w-full" : "hidden"
+          }  md:flex w-80 bg-gradient-to-b from-gray-50 to-white border-r border-gray-100`}
         >
           <ConversationList
             selectedConversationId={selectedConversationId}
@@ -72,6 +77,7 @@ export default function HomePage() {
             onToggleConversationList={() =>
               setIsConversationListVisible((prev) => !prev)
             }
+            setConversationId={setSelectedConversationId}
           />
         </div>
       </div>
